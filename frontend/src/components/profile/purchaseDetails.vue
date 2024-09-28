@@ -2,121 +2,128 @@
   <!-- Previous Orders -->
   <div class="previous-orders">
     <h2 class="section-title">Previous Orders</h2>
-    <table v-if="isDesktop">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Date</th>
-          <th>Quantity</th>
-          <th>Total Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="data in purchases" :key="data.id">
-          <td>{{ data.id }}</td>
-          <td>{{ data.purchase_date }}</td>
-          <td>{{ data.quantity }}</td>
-          <td>{{ data.total_price }}</td>
-        </tr>
-      </tbody>
-    </table>
 
-    <div v-else class="purchase-cards">
+    <div class="purchase-cards">
       <div v-for="data in purchases" :key="data.id" class="purchase-card">
-        <h3>Order ID: {{ data.id }}</h3>
-        <p><strong>Date:</strong> {{ data.purchase_date }}</p>
-        <p><strong>Quantity:</strong> {{ data.quantity }}</p>
-        <p><strong>Total Amount:</strong> {{ data.total_price }}</p>
+        <div class="card-header">
+          <h3>Order ID: <span>{{ data.id }}</span></h3>
+        </div>
+        <div class="purchase-details">
+          <p><strong>Quantity:</strong> <span class="quantity">{{ data.quantity }}</span></p>
+          <p><strong>Total Amount:</strong> <span class="total">{{ data.total_price }}</span></p>
+        </div>
+        <div class="card-footer">
+          <span class="date">{{ data.purchase_date }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, computed, onMounted, onBeforeUnmount } from 'vue';
+import { defineProps, computed } from 'vue';
 
 const props = defineProps({
   data: Object
 });
 
 const purchases = computed(() => props.data);
-const isDesktop = ref(window.innerWidth > 768);
-
-const updateIsDesktop = () => {
-  isDesktop.value = window.innerWidth > 768;
-};
-
-onMounted(() => {
-  window.addEventListener('resize', updateIsDesktop);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateIsDesktop);
-});
 </script>
 
 <style scoped>
 .section-title {
-  font-size: 1.8em;
-  color: #444;
+  font-size: 2em;
+  color: #333;
   margin-bottom: 20px;
-  border-bottom: 2px solid #ddd;
+  text-align: center;
+  border-bottom: 3px solid #007bff;
   padding-bottom: 10px;
 }
 
 .previous-orders {
   margin-bottom: 40px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+  padding: 20px;
 }
 
-table th,
-table td {
-  padding: 12px;
-  text-align: left;
-  border: 1px solid #ddd;
-}
-
-table th {
-  background-color: #f7f7f7;
-  font-weight: bold;
-  color: #555;
-}
-
-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-table tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-/* Card view for mobile */
 .purchase-cards {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 20px;
+  max-height: 415px;
+  overflow-y: auto;
+}
+
+/* تحسين شكل شريط التمرير */
+.purchase-cards::-webkit-scrollbar {
+  width: 12px; /* عرض الشريط */
+}
+
+.purchase-cards::-webkit-scrollbar-track {
+  background: #f1f1f1; /* لون الخلفية للشريط */
+  border-radius: 10px; /* زوايا دائرية للخلفية */
+}
+
+.purchase-cards::-webkit-scrollbar-thumb {
+  background: #007bff; /* لون الشريط نفسه */
+  border-radius: 10px; /* زوايا دائرية للشريط */
+}
+
+.purchase-cards::-webkit-scrollbar-thumb:hover {
+  background: #0056b3; /* لون الشريط عند التمرير */
 }
 
 .purchase-card {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  flex: 1 1 calc(100% - 20px); 
-  transition: background-color 0.3s;
+  background-color: #ffffff;
+  padding: 20px;
+  margin-right: 17px;
+  border-radius: 15px;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border-left: 5px solid #007bff; /* Border to highlight the card */
 }
 
 .purchase-card:hover {
-  background-color: #e3e3e3;
+  background-color: #f1f1f1;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 600px) {
-  .purchase-card {
-    flex: 1 1 calc(100% - 10px); 
-  }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card-header h3 {
+  font-size: 1.5em;
+  margin: 0;
+  color: #333;
+}
+
+.purchase-details {
+  border-top: 2px solid #007bff;
+  padding-top: 10px;
+}
+
+.purchase-card p {
+  margin: 8px 0;
+  font-size: 1.1em;
+}
+
+.quantity, .total {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.card-footer {
+  margin-top: 15px; 
+  text-align: left; 
+}
+
+.date {
+  font-size: 1.1em;
+  color: #6c757d; 
 }
 </style>

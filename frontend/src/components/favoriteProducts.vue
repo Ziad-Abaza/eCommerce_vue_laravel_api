@@ -60,7 +60,7 @@ onBeforeUnmount(() => {
 .related-products-container {
   background-color: white;
   height: 240px;
-  border-radius: 12px;
+  /* border-radius: 12px; */
   position: relative;
   margin-bottom: 25px;
 }

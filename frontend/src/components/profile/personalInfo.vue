@@ -81,8 +81,8 @@ const cancelEdit = () => {
 <style scoped>
 .user-container {
   width: 100%;
-  margin: 20px auto;
-  padding: 20px;
+  /* margin: 20px auto; */
+  padding: 7px;
   border-radius: 10px;
   background-color: #f7f9fc;
 }

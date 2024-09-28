@@ -339,6 +339,24 @@ export const useProductsStore = defineStore("products", {
         this.loading = false;
       }
     },
+    /*
+    |==========================================================
+    |===========>        Favorite Functions        <=========== 
+    |==========================================================
+    */
+    resetProductStore() {
+      this.originalProducts = [];
+      this.brands = [];
+      this.productDetails = [];
+      this.localCardItem = [];
+      this.localFavoriteItem = [];
+      this.currentPage = 1;
+      this.totalPages = 1;
+      this.loading = false;
+      this.error = null;
+      this.noSearchResults = false;
+      this.itemsPerPage = 30;
+    },
   },
   persist: true,
 });

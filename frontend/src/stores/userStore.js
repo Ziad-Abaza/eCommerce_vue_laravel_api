@@ -105,7 +105,10 @@ export const useUserStore = defineStore("user", {
           address: response.data.address,
         };
         this.fetchUsers();
-        notificationStore.setNotifications('Profile updated successfully','s uccess');
+        notificationStore.setNotifications(
+          "Profile updated successfully",
+          "s uccess"
+        );
 
         console.log("User updated successfully:", response.data);
       } catch (err) {
@@ -114,6 +117,17 @@ export const useUserStore = defineStore("user", {
       } finally {
         this.loading = false;
       }
+    },
+    /*
+    |-------------------------------------------------
+    | Update user information
+    |-------------------------------------------------
+    */
+    resetUserStore() {
+      this.userInfo = null;
+      this.orders = []; 
+      this.purchases = []; 
+      this.favorites = []; 
     },
   },
   persist: true,
