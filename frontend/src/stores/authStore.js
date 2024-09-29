@@ -117,14 +117,14 @@ export const useAuthStore = defineStore("auth", {
     |-------------------------------------------------
     */
     async logout() {
+      const productStore = useProductsStore();
+      const userStore = useUserStore();
       try {
-        await axios.post("/api/logout");
-        this.resetAuthState();
-        Cookies.remove("authUser");
-        const productStore = useProductsStore();
         productStore.resetProductStore();
-        const userStore = useUserStore();
-        userStore.resetUserStore(); 
+        userStore.resetUserStore();
+        Cookies.remove("authUser");
+        this.resetAuthState();
+        await axios.post("/api/logout");
       } catch (error) {
         this.handleError(error);
       }

@@ -28,10 +28,13 @@ export const useNotificationStore = defineStore("notifications", {
       this.error = null;
 
       try {
-        const response = await axios.get("/api/notification/");
-        if (response.data && response.data.data) {
-          this.notifications = response.data.data;
-          this.latestNotification = this.notifications[0] || null;
+        const userAuth = useAuthStore().isLoggedIn;
+        if (userAuth) {
+          const response = await axios.get("/api/notification/");
+          if (response.data && response.data.data) {
+            this.notifications = response.data.data;
+            this.latestNotification = this.notifications[0] || null;
+          }
         }
       } catch (err) {
         this.error = "Failed to fetch notifications";

@@ -35,7 +35,7 @@
 
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useProductsStore } from "@/stores/productsStore.js";
 
 const productsStore = useProductsStore();
@@ -59,6 +59,7 @@ const favoriteId = computed(() => {
     : null;
 });
 
+watch( )
 /*
 |---------------------------------------------------
 |> Handle Adding/Removing Favorite

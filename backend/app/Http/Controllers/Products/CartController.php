@@ -25,7 +25,7 @@ class CartController extends Controller
         $user = Auth::user();
 
         $carts = $this->getAllWithRelation(new Cart(), ['user', 'product', 'productDetail'])
-                      ->where('user_id', 1);
+                      ->where('user_id', $user->id);
         return CartResource::collection($carts);
     }
 

@@ -102,10 +102,13 @@ export const useProductsStore = defineStore("products", {
     async fetchCartData() {
       this.loading = true;
       this.error = null;
+      const userAuth = useAuthStore().isLoggedIn;
       try {
-        const response = await axios.get("/api/cart/");
-        this.cartItems = response.data.data;
-        this.findBrands();
+        if (userAuth) {
+          const response = await axios.get("/api/cart/");
+          this.cartItems = response.data.data;
+          this.findBrands();
+        }
       } catch (err) {
         this.error = "Failed to fetch cart data";
         console.error(err);
@@ -339,6 +342,21 @@ export const useProductsStore = defineStore("products", {
         this.loading = false;
       }
     },
+
+    resetFavorites() {
+      this.products.forEach((product) => {
+        if (product.favorites) {
+          product.favorites.length = 0; 
+          console.log(
+            `Resetting favorites for product ${product.id} to ${product.favorites.length} items`
+          );
+        } else {
+          console.warn(
+            `Product ${product.id} does not have a favorites property.`
+          );
+        }
+      });
+    },
     /*
     |==========================================================
     |===========>        Favorite Functions        <=========== 
@@ -346,16 +364,19 @@ export const useProductsStore = defineStore("products", {
     */
     resetProductStore() {
       this.originalProducts = [];
+      this.products = [];
+      this.cartItems = [];
       this.brands = [];
       this.productDetails = [];
       this.localCardItem = [];
       this.localFavoriteItem = [];
       this.currentPage = 1;
-      this.totalPages = 1;
+      this.totalPages = null;
       this.loading = false;
       this.error = null;
       this.noSearchResults = false;
       this.itemsPerPage = 30;
+      this.resetFavorites();
     },
   },
   persist: true,
