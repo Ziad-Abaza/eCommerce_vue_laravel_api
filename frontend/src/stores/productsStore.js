@@ -368,20 +368,32 @@ export const useProductsStore = defineStore("products", {
       this.loading = true;
       this.error = null;
       const authStore = useAuthStore();
+
+      console.log("Starting to add to favorites. Product ID:", product_id); // تتبع القيم
+
       try {
         if (authStore.isLoggedIn) {
+          console.log(
+            "User is logged in. Sending request to add to favorites."
+          ); // تتبع حالة تسجيل الدخول
           const response = await axios.post("/api/favorite/", {
             product_id: product_id,
           });
+          console.log("Response from server:", response.data); // تتبع استجابة الخادم
           this.fetchProducts(1);
         } else {
+          console.log("User is not logged in. Adding to local favorites."); // تتبع حالة عدم تسجيل الدخول
           this.localFavoriteItem.push(product_id);
         }
       } catch (err) {
         this.error = "Failed to fetch cart data";
-        console.error(err);
+        console.error("Error occurred:", err); // تتبع الخطأ
       } finally {
         this.loading = false;
+        console.log(
+          "Finished adding to favorites. Loading state:",
+          this.loading
+        ); // تتبع حالة التحميل
       }
     },
 
@@ -389,22 +401,42 @@ export const useProductsStore = defineStore("products", {
       this.loading = true;
       this.error = null;
       const authStore = useAuthStore();
+
+      console.log(
+        "Starting to remove from favorites. Favorite ID:",
+        favoriteId
+      ); // تتبع القيم
+
       try {
         if (authStore.isLoggedIn) {
+          console.log("User is logged in. Sending request to remove favorite."); // تتبع حالة تسجيل الدخول
           const response = await axios.delete(`/api/favorite/${favoriteId}`);
+          console.log("Response from server:", response.data); // تتبع استجابة الخادم
         } else {
+          console.log("User is not logged in. Removing from local favorites."); // تتبع حالة عدم تسجيل الدخول
           const index = this.localFavoriteItem.indexOf(productID);
           if (index !== -1) {
             this.localFavoriteItem.splice(index, 1);
+            console.log(
+              "Removed product from local favorites. Product ID:",
+              productID
+            ); // تتبع العملية المحلية
+          } else {
+            console.log("Product ID not found in local favorites."); // حالة عدم العثور على المنتج
           }
         }
       } catch (err) {
         this.error = "Failed to fetch cart data";
-        console.error(err);
+        console.error("Error occurred:", err); // تتبع الخطأ
       } finally {
         this.loading = false;
+        console.log(
+          "Finished removing from favorites. Loading state:",
+          this.loading
+        ); // تتبع حالة التحميل
       }
     },
+
     /*
     |==========================================================
     |===========>        Favorite Functions        <=========== 
