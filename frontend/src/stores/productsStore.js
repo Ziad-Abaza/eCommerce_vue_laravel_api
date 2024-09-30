@@ -28,7 +28,8 @@ export const useProductsStore = defineStore("products", {
       return state.cartItems;
     },
     getCountCart(state) {
-      return state.cartItems.length;
+      const userAuth = useAuthStore().isLoggedIn;
+      return userAuth ? state.cartItems.length : state.localCardItem.length;
     },
     getBrands(state) {
       return state.brands;
@@ -102,32 +103,48 @@ export const useProductsStore = defineStore("products", {
     async fetchCartData() {
       this.loading = true;
       this.error = null;
+      console.log("Start fetching cart data...");
+
       const userAuth = useAuthStore().isLoggedIn;
+      console.log("User Auth Status:", userAuth);
+
       try {
         if (userAuth) {
           const response = await axios.get("/api/cart/");
+          console.log("API Response for Cart Data:", response.data);
+
           this.cartItems = response.data.data;
+          console.log("Cart Items:", this.cartItems);
+
           this.findBrands();
         }
       } catch (err) {
         this.error = "Failed to fetch cart data";
-        console.error(err);
+        console.error("Error in fetchCartData:", err);
       } finally {
         this.loading = false;
+        console.log("Finished fetching cart data. Loading:", this.loading);
       }
     },
 
     async addToCart(productId, quantity, product_detail_id) {
       this.loading = true;
       this.error = null;
+      console.log(
+        `Adding product to cart: Product ID: ${productId}, Quantity: ${quantity}, Detail ID: ${product_detail_id}`
+      );
+
       const authStore = useAuthStore();
       const notificationStore = useNotificationStore();
+      console.log("User Auth Status:", authStore.isLoggedIn);
 
       try {
         if (authStore.isLoggedIn) {
           const product = this.originalProducts.find(
             (product) => product.id === productId
           );
+          console.log("Found Product:", product);
+
           if (!product) {
             throw new Error("Product not found");
           }
@@ -136,50 +153,83 @@ export const useProductsStore = defineStore("products", {
             quantity: quantity,
             product_detail_id: product_detail_id,
           });
+          console.log("API Response for Add to Cart:", response.data);
         } else {
+          const product = this.originalProducts.find(
+            (product) => product.id === productId
+          );
+          console.log("Found Product (Local Cart):", product);
+
+          if (!product) {
+            throw new Error("Product not found");
+          }
+
           this.localCardItem.push({
+            product: { ...product },
             product_id: productId,
             quantity: quantity,
             product_detail_id: product_detail_id,
           });
+          console.log("Added to Local Cart:", this.localCardItem);
         }
-        this.fetchCartData();
+
+        await this.fetchCartData();
         notificationStore.setNotifications("Product added to Cart");
       } catch (err) {
-        this.error = "Failed to fetch cart data";
-        console.error(err);
+        this.error = "Failed to add item to cart";
+        console.error("Error in addToCart:", err);
       } finally {
         this.loading = false;
+        console.log("Finished adding product to cart. Loading:", this.loading);
       }
     },
 
-    async removeFromCart(productId) {
+    async removeFromCart(cartId, productId) {
       this.loading = true;
       this.error = null;
+      console.log(
+        `Removing item from cart: Cart ID: ${cartId}, Product ID: ${productId}`
+      );
+
       const authStore = useAuthStore();
+      console.log("User Auth Status:", authStore.isLoggedIn);
+
       try {
         if (authStore.isLoggedIn) {
           const product = this.originalProducts.find(
-            (product) => product.id === productId
+            (product) => product.id == productId
           );
+          console.log("product id:", productId);
+          console.log("Found Product:", product);
+
           if (!product) {
             throw new Error("Product not found");
           }
-          const response = await axios.delete(`/api/cart/${productId}`);
+
+          const response = await axios.delete(`/api/cart/${cartId}`);
+          console.log("API Response for Remove from Cart:", response.data);
         } else {
           const index = this.localCardItem.findIndex(
             (item) => item.product_id === productId
           );
+          console.log("Found Item Index in Local Cart:", index);
+
           if (index !== -1) {
             this.localCardItem.splice(index, 1);
+            console.log("Removed Item from Local Cart:", this.localCardItem);
           }
         }
-        this.fetchCartData();
+
+        await this.fetchCartData();
       } catch (err) {
         this.error = "Failed to delete item from cart data";
-        console.error(err);
+        console.error("Error in removeFromCart:", err);
       } finally {
         this.loading = false;
+        console.log(
+          "Finished removing product from cart. Loading:",
+          this.loading
+        );
       }
     },
 
@@ -187,42 +237,55 @@ export const useProductsStore = defineStore("products", {
       if (this.loading) return;
       this.loading = true;
       this.error = null;
+      console.log(
+        ` Cart ID: ${cartId}, Product ID: ${productId}, Quantity: ${quantity}, Details ID: ${details_id}`
+      );
 
       try {
         const authStore = useAuthStore();
         const userAuth = authStore.isLoggedIn;
+        console.log("User Auth Status:", userAuth);
 
         if (userAuth) {
-          await axios.post(`/api/cart/${cartId}`, {
+          const response = await axios.post(`/api/cart/${cartId}`, {
             product_id: productId,
             quantity: quantity,
             product_detail_id: details_id,
           });
+          console.log("API Response:", response.data);
         } else {
           const localItem = this.localCardItem.find(
             (item) =>
-              item.product_id === productId &&
-              item.product_detail_id === details_id
+              item.product_id == productId &&
+              item.product_detail_id == details_id
           );
+          console.log(" Updated:", localItem);
+
           if (localItem) {
             localItem.quantity = quantity;
+            console.log("Updated Quantity successfully:", localItem);
           } else {
             this.localCardItem.push({
               product_id: productId,
               quantity: quantity,
               product_detail_id: details_id,
             });
+            console.log("Added New Item to Local Cart:", this.localCardItem);
           }
         }
 
         await this.fetchCartData();
-
+        console.log("Successfully updated product quantity.");
         this.error = null;
       } catch (error) {
         this.error = error.message;
         console.error("Error updating product quantity:", error.message);
       } finally {
         this.loading = false;
+        console.log(
+          "Finished updating product quantity. Loading:",
+          this.loading
+        );
       }
     },
 
@@ -322,7 +385,7 @@ export const useProductsStore = defineStore("products", {
       }
     },
 
-    async removeFavorite(favoriteId) {
+    async removeFavorite(favoriteId, productID = null) {
       this.loading = true;
       this.error = null;
       const authStore = useAuthStore();
@@ -330,7 +393,7 @@ export const useProductsStore = defineStore("products", {
         if (authStore.isLoggedIn) {
           const response = await axios.delete(`/api/favorite/${favoriteId}`);
         } else {
-          const index = this.localFavoriteItem.indexOf(favoriteId);
+          const index = this.localFavoriteItem.indexOf(productID);
           if (index !== -1) {
             this.localFavoriteItem.splice(index, 1);
           }
@@ -342,41 +405,62 @@ export const useProductsStore = defineStore("products", {
         this.loading = false;
       }
     },
-
-    resetFavorites() {
-      this.products.forEach((product) => {
-        if (product.favorites) {
-          product.favorites.length = 0; 
-          console.log(
-            `Resetting favorites for product ${product.id} to ${product.favorites.length} items`
-          );
-        } else {
-          console.warn(
-            `Product ${product.id} does not have a favorites property.`
-          );
-        }
-      });
-    },
     /*
     |==========================================================
     |===========>        Favorite Functions        <=========== 
     |==========================================================
     */
     resetProductStore() {
+      console.log("Resetting originalProducts...");
       this.originalProducts = [];
+      console.log(this.originalProducts);
+
+      console.log("Resetting products...");
       this.products = [];
+      console.log(this.products);
+
+      console.log("Resetting cartItems...");
       this.cartItems = [];
+      console.log(this.cartItems);
+
+      console.log("Resetting brands...");
       this.brands = [];
+      console.log(this.brands);
+
+      console.log("Resetting productDetails...");
       this.productDetails = [];
+      console.log(this.productDetails);
+
+      console.log("Resetting localCardItem...");
       this.localCardItem = [];
+      console.log(this.localCardItem);
+
+      console.log("Resetting localFavoriteItem...");
       this.localFavoriteItem = [];
+      console.log(this.localFavoriteItem);
+
+      console.log("Resetting currentPage to 1...");
       this.currentPage = 1;
+
+      console.log("Resetting totalPages to null...");
       this.totalPages = null;
+
+      console.log("Resetting loading to false...");
       this.loading = false;
+
+      console.log("Resetting error to null...");
       this.error = null;
+
+      console.log("Resetting noSearchResults to false...");
       this.noSearchResults = false;
+
+      console.log("Resetting itemsPerPage to 30...");
       this.itemsPerPage = 30;
-      this.resetFavorites();
+
+      console.log("Fetching products after reset...");
+      this.fetchProducts();
+
+      console.log("Product store reset completed.");
     },
   },
   persist: true,

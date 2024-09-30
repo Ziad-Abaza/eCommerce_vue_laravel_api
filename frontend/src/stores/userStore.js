@@ -124,10 +124,23 @@ export const useUserStore = defineStore("user", {
     |-------------------------------------------------
     */
     resetUserStore() {
+      console.log("Resetting userInfo...");
       this.userInfo = null;
-      this.orders = []; 
-      this.purchases = []; 
-      this.favorites = []; 
+      console.log(this.userInfo );
+
+      console.log("Resetting orders...");
+      this.orders = [];
+      console.log(this.orders );
+
+      console.log("Resetting purchases...");
+      this.purchases = [];
+      console.log(this.purchases );
+
+      console.log("Resetting favorites...");
+      this.favorites = [];
+      console.log(this.favorites );
+
+      console.log("User store reset completed.");
     },
   },
   persist: true,

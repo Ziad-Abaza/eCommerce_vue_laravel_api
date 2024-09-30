@@ -37,8 +37,10 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useProductsStore } from "@/stores/productsStore.js";
+import { useAuthStore } from "@/stores/authStore.js";
 
 const productsStore = useProductsStore();
+const userAuth = useAuthStore().isLoggedIn;
 const props = defineProps({
   product: Object,
 });
@@ -49,7 +51,9 @@ const props = defineProps({
 |---------------------------------------------------
 */
 let isFavorite = ref(
-  props.product.favorites && props.product.favorites.length > 0
+  userAuth
+    ? props.product.favorites && props.product.favorites.length > 0
+    : productsStore.localFavoriteItem.includes(props.product.id)
 );
 
 
@@ -59,7 +63,7 @@ const favoriteId = computed(() => {
     : null;
 });
 
-watch( )
+
 /*
 |---------------------------------------------------
 |> Handle Adding/Removing Favorite
@@ -72,7 +76,7 @@ const handleFavorite = () => {
       productsStore.addToFavorite(props.product.id); 
       console.log("Adding to favorites");
     } else {
-      productsStore.removeFavorite(favoriteId.value); 
+      productsStore.removeFavorite(favoriteId.value, props.product.id); 
       console.log("Removed from favorites");
     }
   } catch (error) {
@@ -150,10 +154,10 @@ const handleAddCart = () => {
 
 <style scoped>
 .product-card {
-  background-color: #fff;
+  background-color: #f0f0f0;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   text-align: center;
   position: relative;
   transition: transform 0.3s ease, box-shadow 0.3s ease;

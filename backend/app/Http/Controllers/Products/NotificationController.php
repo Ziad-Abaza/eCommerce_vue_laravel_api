@@ -22,7 +22,7 @@ class NotificationController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        $notifications = User::find($userId)->notifications; // استخدام العلاقة لتصفية الإشعارات
+        $notifications = User::find($userId)->notifications; 
 
         return NotificationResource::collection($notifications);
     }

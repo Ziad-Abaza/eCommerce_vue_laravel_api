@@ -120,12 +120,24 @@ export const useAuthStore = defineStore("auth", {
       const productStore = useProductsStore();
       const userStore = useUserStore();
       try {
+        console.log("Resetting product store...");
         productStore.resetProductStore();
+
+        console.log("Resetting user store...");
         userStore.resetUserStore();
+
+        console.log("Removing authUser cookie...");
         Cookies.remove("authUser");
+
+        console.log("Resetting auth state...");
         this.resetAuthState();
+
+        console.log("Sending logout request to server...");
         await axios.post("/api/logout");
+
+        console.log("Logout successful.");
       } catch (error) {
+        console.error("An error occurred during logout:", error);
         this.handleError(error);
       }
     },
@@ -198,10 +210,22 @@ export const useAuthStore = defineStore("auth", {
     |-------------------------------------------------
     */
     resetAuthState() {
+      console.log("Resetting currentUser...");
       this.currentUser = null;
+      console.log("currentUser:", this.currentUser );
+
+      console.log("Resetting userId...");
       this.userId = null;
+      console.log("userId:", this.userId );
+
+      console.log("Resetting error state...");
       this.error = null;
+      console.log("error:", this.error );
+
+      console.log("Removing authUser cookie...");
       Cookies.remove("authUser");
+
+      console.log("Authentication state reset completed.");
     },
   },
 

@@ -10,14 +10,24 @@
       <div class="cart-items">
         <div class="cart-item" v-for="(item, index) in cart" :key="index">
           <img
-            :src="item.product.details.image"
+            :src="
+              isUserLoggedIn
+                ? item.product.details.image
+                : item.product.details[0].image
+            "
             alt="Product Image"
             class="cart-item-img"
           />
           <div class="cart-item-details">
             <h3>{{ item.product.product_name }}</h3>
             <p class="item-description">{{ item.product.description }}</p>
-            <p class="item-price">Price: ${{ item.product.details.price }}</p>
+            <p class="item-price">
+              Price: ${{
+                isUserLoggedIn
+                  ? item.product.details.price
+                  : item.product.details[0].price
+              }}
+            </p>
             <div class="quantity-controls">
               <button
                 @click="updateQuantity(index, item.quantity - 1)"
@@ -49,21 +59,22 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useProductsStore } from "@/stores/productsStore.js";
 import { useAuthStore } from "@/stores/authStore";
-import axios from "axios";
-
 
 const productsStore = useProductsStore();
 const authStore = useAuthStore();
 const cart = ref([]);
+const isUserLoggedIn = authStore.isLoggedIn;
 
 onMounted(() => {
   productsStore.fetchCartData();
-  cart.value = productsStore.getCartItems;
+
+  isUserLoggedIn
+    ? (cart.value = productsStore.getCartItems)
+    : (cart.value = productsStore.getLocalCardItem);
 });
 
 /*
@@ -72,10 +83,21 @@ onMounted(() => {
 |----------------------------------------------------
 */
 const totalPrice = computed(() => {
-  return cart.value.reduce(
-    (acc, item) => acc + item.product.details.price * item.quantity,
-    0
-  );
+  const total = cart.value.reduce((acc, item) => {
+    const itemQuantity = item.quantity;
+    let itemPrice = isUserLoggedIn
+      ? item.product.details.price
+      : item.product.details[0].price;
+
+    console.log("Item details:", item.product);
+    console.log("Item price:", itemPrice);
+    console.log("Item quantity:", itemQuantity);
+
+    return acc + itemPrice * itemQuantity;
+  }, 0);
+
+  console.log("Total price calculated:", total);
+  return total;
 });
 
 /*
@@ -84,19 +106,41 @@ const totalPrice = computed(() => {
 |----------------------------------------------------
 */
 function updateQuantity(index, quantity) {
-  if (quantity < 1) return; 
+  if (quantity < 1) return;
+
+  console.log("Updating quantity for index:", index);
+  console.log("New quantity:", quantity);
 
   const item = cart.value[index];
+  if (
+    !item ||
+    quantity >
+      (isUserLoggedIn
+        ? item.product.details.stock
+        : item.product.details[0].stock)
+  ) {
+    console.warn("Invalid item or quantity exceeds stock");
+    return;
+  }
 
-  if (item && quantity > item.product.details.stock) return; 
+  // console.log("Item stock:", item.details.stock);
+  console.log("Updating item quantity:", item.product.product_name);
 
-  if (item) {
-    item.quantity = quantity; 
+  item.quantity = quantity;
+
+  if (isUserLoggedIn) {
     productsStore.updateProductQuantity(
       item.id,
       item.product.product_id,
       quantity,
-      item.product.details.id 
+      item.product.details.id
+    );
+  } else {
+    productsStore.updateProductQuantity(
+      null,
+      item.product_id,
+      quantity,
+      item.product.details[0].id
     );
   }
 }
@@ -107,11 +151,17 @@ function updateQuantity(index, quantity) {
 |----------------------------------------------------
 */
 function removeFromCart(index) {
+  console.log("Attempting to remove item at index:", index);
+
   const item = cart.value[index];
-  if (item) {
-    cart.value.splice(index, 1); 
-    productsStore.removeFromCart(item.id);
+  if (!item) {
+    console.warn("No item found at index:", index);
+    return;
   }
+
+  cart.value.splice(index, 1);
+  productsStore.removeFromCart(item.id, item.product.product_id);
+  console.log("Item removed from cart:", item.product.product_name);
 }
 </script>
 
@@ -259,4 +309,4 @@ function removeFromCart(index) {
     margin-bottom: 10px;
   }
 }
-</style>
+</style>~

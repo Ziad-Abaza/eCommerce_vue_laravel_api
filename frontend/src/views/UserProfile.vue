@@ -1,7 +1,7 @@
 <template>
   <HeaderSection />
   <div class="main-container">
-    <button @click="logout"  class="logout-button">Logout</button>
+    <button @click="logout" class="logout-button">Logout</button>
     <div v-if="loading" class="loading-container">
       <div class="spinner"></div>
       <p>Loading, please wait...</p>
